@@ -3,8 +3,6 @@
 #include <string.h>
 
 #define MAX_VARS    256
-#define LOW         0
-#define HIGH        1
 
 // Enumerated type for indicating the type of a variable (INPUT, OUTPUT, or TEMPOARY)
 typedef enum {
@@ -333,8 +331,9 @@ void build_circuit(wirelist_t *wires, gatelist_t *gates, circuitbuilder_t *build
                     // Output of the current gate.
                     all_wires[gate->params[2]] &= all_wires[gate->params[j]];
                 }
+                all_wires[gate->params[2]] = !all_wires[gate->params[2]];
                 wire = hashtable_get(wires, gate->params[2]);
-                if (wire->type == OUTPUT) outputs[wire->id - nInputs] = !all_wires[gate->params[2]];
+                if (wire->type == OUTPUT) outputs[wire->id - nInputs] = all_wires[gate->params[2]];
             }
             else if (gate->type == NOR) {
                 all_wires[gate->params[2]] = 0;
@@ -349,8 +348,9 @@ void build_circuit(wirelist_t *wires, gatelist_t *gates, circuitbuilder_t *build
                     // Output of the current gate.
                     all_wires[gate->params[2]] |= all_wires[gate->params[j]];
                 }
+                all_wires[gate->params[2]] = !all_wires[gate->params[2]];
                 wire = hashtable_get(wires, gate->params[2]);
-                if (wire->type == OUTPUT) outputs[wire->id - nInputs] = !all_wires[gate->params[2]];
+                if (wire->type == OUTPUT) outputs[wire->id - nInputs] = all_wires[gate->params[2]];
             }
             else if (gate->type == XOR) {
                 all_wires[gate->params[2]] = 0;
@@ -428,6 +428,8 @@ void build_circuit(wirelist_t *wires, gatelist_t *gates, circuitbuilder_t *build
                 if (wire->type == OUTPUT) outputs[wire->id - nInputs] = all_wires[gate->params[calc_gate_in_size(gate)]];
             }
         }
+
+        // for (wire_t *wire = wires->head; wire != NULL; wire = wire->next) printf("%s: %d\n", wire->key, all_wires[wire->id]);
 
         for (int i = 0; i < nInputs; i++) printf("%d ", inputs[i]);
         printf("| ");
